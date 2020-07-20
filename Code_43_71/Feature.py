@@ -1,4 +1,4 @@
-import pandas as pd
+
 import pymysql
 import numpy as np
 
@@ -9,20 +9,13 @@ import heapq
 
 import pandas as pd
 from sklearn.naive_bayes import MultinomialNB
-from sklearn.preprocessing import LabelEncoder
+
 from sklearn.model_selection import KFold
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.tree import DecisionTreeClassifier
-from nltk.classify import maxent
-from sklearn.model_selection import cross_val_score
-from nltk.classify import MaxentClassifier
-from nltk.stem import PorterStemmer
-from nltk.corpus import stopwords
 
-from sklearn.metrics import precision_score
-from sklearn.metrics import recall_score
-from sklearn.metrics import accuracy_score
-from sklearn import model_selection
+from sklearn.model_selection import cross_val_score
+
 
 
 import nltk
@@ -31,7 +24,7 @@ from nltk.stem import WordNetLemmatizer
 
 from nltk.corpus import stopwords
 
-class get_Features:
+class Features_or_UX:
 
     def __init__(self):
         self.m_s = {}
@@ -65,8 +58,8 @@ class get_Features:
                   'he', 'him', 'his', 'himself', 'she', 'her', 'hers', 'herself',
                   'it', 'its', 'itself', 'they', 'them', 'their', 'theirs', 'us',
                   'themselves', 'am', 'is', 'are', 'a', 'an', 'the', 'and', 'in',
-                  'out', 'on', 'up', 'down', 's', 't', 'please', 'fix', 'app', "facebook", "fb", "lite", "application",
-                  "app", "great", "enjoy", "game", "brawler"]
+                  'out', 'on', 'up', 'down', 's', 't', 'please', 'fix', 'app', 'fine', "application",
+                  "app", "great", "enjoy", "game", "brawler","good","bad","love","nothing"]
         for w in wordslist:
 
             if w not in stop_words and w not in custom:
@@ -74,7 +67,6 @@ class get_Features:
 
         return meaningful_words
 
-    # Task4
 
     def get_wordnet_pos(self,word):
         """Map POS tag to first character lemmatize() accepts"""
@@ -109,6 +101,7 @@ class get_Features:
 
         # mean_word=[remove_stopwords(w) for w in words_list]
         # print('mean_word: ', mean_word,end='\n')
+
         lemmetized_word = [self.Lemmetizer(w) for w in clean if len(w)>3]
         # print("l", lemmetized_word[1])
 
@@ -333,15 +326,15 @@ class get_Features:
         #un=self.unique_word_frequency(processed)
         #m_w=self.most_freq_words(un)
         #print(m_w)
-        r=self.get_data_classification()
-        l=['pdf','view','pdf','watch','pdf','upload']
-        colc=self.collocation(processed)
+       # r=self.get_data_classification()
 
-        return colc
+        extract_features=self.collocation(processed)
 
-
+        return extract_features
 
 
-r=get_Features()
-print(r.get_features())
-r.get_accuracy()
+
+
+f=Features_or_UX()
+print(f.get_features())
+f.get_accuracy()
