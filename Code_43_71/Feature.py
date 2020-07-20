@@ -40,7 +40,7 @@ class get_Features:
         i = 0
         # extract noun,verb,adjective from the reviews
         for _ in tagged:
-            if _[1].startswith('VB') or _[1].startswith('NN'):
+            if _[1].startswith('VB') or _[1].startswith('J')  or _[1].startswith('NN'):
                 r.append(_[0])
 
         return r
@@ -135,7 +135,7 @@ class get_Features:
         f_list = []
         r = []
         for k in word_frequency.keys():
-            if word_frequency[k] > 0:
+            if word_frequency[k] > 1:
                 print(k)
                 f_list.append([k, word_frequency[k]])
 
