@@ -6,6 +6,7 @@ from nltk.corpus import brown
 
 
 from nltk.corpus import wordnet
+import heapq
 import nltk
 
 import pandas as pd
@@ -25,6 +26,9 @@ from nltk.stem import PorterStemmer
 from nltk.corpus import stopwords
 
 class get_Features:
+
+    def __init__(self):
+        self.m_s = {}
 
     def tokenize(self,msg):
 
@@ -88,6 +92,7 @@ class get_Features:
     def data_cleaning(self,df):
 
         words_list = [self.tokenize(msg) for msg in df]
+
       #  print(words_list)
 
         Pos = [self.POST_tagger(word) for word in words_list]
@@ -95,31 +100,54 @@ class get_Features:
         clean = [self.remove_stopwords(p) for p in Pos]
         #print(clean)
 
+
         # mean_word=[remove_stopwords(w) for w in words_list]
         # print('mean_word: ', mean_word,end='\n')
         lemmetized_word = [self.Lemmetizer(w) for w in clean if len(w)>3]
         print("l", lemmetized_word[1])
 
         r=[x for x in lemmetized_word if x]
+        syn_extract = [self.merge_synonyms(p) for p in r]
 
-        return r
+        return syn_extract
+
+    def unique_word_frequency(self,g_words_list):
+        unique = []
+        # count the unique words in the full dataset
+        word_frequency = {}
+        for words in g_words_list:
+            for w in words:
+                if w not in word_frequency.keys():
+                    word_frequency[w] = 1
+                else:
+                    word_frequency[w] += 1
+
+        return word_frequency
 
 
 
+
+    def most_freq_words(self,unique):
+        most_freq = heapq.nlargest(100, unique, key=unique.get)
+        return most_freq
+
+    def find_ngrams(self,input_list, n):
+        return zip(*[input_list[i:] for i in range(n)])
+
+    def extract_bigram_words(self,input_data):
+        return self.find_ngrams(input_data, 2)
 
     def collocation(self,r):
+        feature=[]
+        for i in r:
+            bigrams =self.extract_bigram_words(i)
+            bigram_features = dict()
+            for (w1, w2) in bigrams:
+                bigram_features[(w1, w2)] = 1
+            l = []
 
-        # collocation
-        feature = []
-        #for i in r:
-
-        #bcf = BigramCollocationFinder.from_words(brown.i()[:2000])
-        bgm = nltk.collocations.BigramAssocMeasures()
-            #print(i)
-        for i in range(0,len(r)):
-            finder = BigramCollocationFinder.from_words(r[i])
-            #scored = finder.score_ngrams(bgm.likelihood_ratio)
-            l = finder.nbest(BigramAssocMeasures.likelihood_ratio,40)
+            for key in bigram_features.keys():
+                l.append(key)
             feature.append(l)
 
 
@@ -133,15 +161,48 @@ class get_Features:
                 else:
                     word_frequency[w] += 1
         f_list = []
-        r = []
+
         for k in word_frequency.keys():
-            if word_frequency[k] > 1:
+            if word_frequency[k] > 2:
                 print(k)
-                f_list.append([k, word_frequency[k]])
+                f_list.append([list(k), word_frequency[k]])
+        t=sorted(f_list)
+        feature_lists=[]
+
+        for i in t:
+            feature_lists.append(i[0][0]+'_'+i[0][1])
+
+
+
+
+        return(feature_lists)
+
+
+
+
+
 
     # word_synonyms = get_word_synonyms_from_sent(word, sent)
     # print ("WORD:", word)
     # print ("SENTENCE:", sent)
+
+    def syn_list(self, r):
+        syn = []
+        for synset in wordnet.synsets(r):
+            for lemma in synset.lemmas():
+                syn.append(lemma.name())
+        return syn
+
+    def merge_synonyms(self, k):
+        for i in range(len(k)):
+            if k[i] not in self.m_s.keys():
+                for f, g in self.m_s.items():
+                    if k[i] in g:
+                        k[i] = f
+                    else:
+                        k[i]=k[i]
+                self.m_s[k[i]] = self.syn_list(k[i])
+        return k
 
 
     def get_features(self):
@@ -155,11 +216,16 @@ class get_Features:
         f=pd.DataFrame(result,columns=['r_id','title','comment'])
         f['merged']=f['title'].astype(str) + f['comment']
         processed=self.data_cleaning(f['merged'])
-        print(processed)
+        #un=self.unique_word_frequency(processed)
+        #m_w=self.most_freq_words(un)
+        #print(m_w)
+        l=['pdf','view','pdf','watch','pdf','upload']
         colc=self.collocation(processed)
+
+        return colc
 
 
 
 
 r=get_Features()
-r.get_features()
+print(r.get_features())
